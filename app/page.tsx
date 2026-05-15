@@ -6,37 +6,48 @@ import { useEffect, useState } from "react";
 
 export default function Home() {
   const [activeIndex, setActiveIndex] = useState(0);
+const [isInteractive, setIsInteractive] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      const vh = window.innerHeight;
-      const slot = (scrollY + vh / 2) / vh;
-      
-      let newIndex;
-      if (slot < 1.5) {
-        newIndex = 0;
-      } else if (slot < 3.5) {
-        newIndex = 1;
-      } else if (slot < 5.5) {
-        newIndex = 2;
-      } else {
-        newIndex = 3;
-      }
-      
-      console.log("scrollY:", scrollY, "slot:", slot.toFixed(2), "index:", newIndex);
-      setActiveIndex(newIndex);
-    };
+ useEffect(() => {
+  const handleScroll = () => {
+    const scrollY = window.scrollY;
+    const vh = window.innerHeight;
+    const slot = (scrollY + vh / 2) / vh;
+    
+    let newIndex;
+    if (slot < 1.5) {
+      newIndex = 0;
+    } else if (slot < 3.5) {
+      newIndex = 1;
+    } else if (slot < 5.5) {
+      newIndex = 2;
+    } else {
+      newIndex = 3;
+    }
+    setActiveIndex(newIndex);
+    
+    // Only enable interaction when fully on a black band
+    // Slot 0 (logo): centred at 0.5, fully visible from ~0 to ~1
+    // Slot 2 (statement one): centred at 2.5, fully visible from ~2 to ~3
+    // Slot 4 (statement two): centred at 4.5, fully visible from ~4 to ~5
+    // Slot 6 (CTA): centred at 6.5, fully visible from ~6 onwards
+    const isFullyVisible = 
+      (newIndex === 0 && slot < 1) ||
+      (newIndex === 1 && slot >= 2 && slot < 3) ||
+      (newIndex === 2 && slot >= 4 && slot < 5) ||
+      (newIndex === 3 && slot >= 6);
+    setIsInteractive(isFullyVisible);
+  };
 
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  handleScroll();
+  window.addEventListener("scroll", handleScroll, { passive: true });
+  return () => window.removeEventListener("scroll", handleScroll);
+}, []);
 
   return (
     <main className="bg-black">
       {/* Fixed centred content layers — only one visible at a time */}
-      <div className="fixed inset-0 flex items-center justify-center px-8 pointer-events-none z-10">
+      <div className="fixed inset-0 flex items-center justify-center px-8 pointer-events-none z-50">
         {/* Slot 0: Logo */}
         <div
           className="absolute inset-0 flex items-center justify-center transition-opacity duration-200"
@@ -69,18 +80,23 @@ export default function Home() {
         </p>
 
         {/* Slot 3: CTA */}
-        <div
-          className="absolute flex flex-col items-start gap-2 transition-opacity duration-200 pointer-events-auto"
-          style={{ opacity: activeIndex === 3 ? 1 : 0 }}
-        >
-          <Link href="/portfolio" className="cta-link">
-            <span className="chev">&gt;</span>Portfolio.
-          </Link>
-          <Link href="/contact" className="cta-link">
-            <span className="chev">&gt;</span>Contact.
-          </Link>
-        </div>
-      </div>
+<div
+  className="absolute flex flex-col items-start gap-2 transition-opacity duration-200"
+  style={{ 
+    opacity: activeIndex === 3 ? 1 : 0,
+    visibility: activeIndex === 3 ? "visible" : "hidden",
+    pointerEvents: activeIndex === 3 && isInteractive ? "auto" : "none",
+  }}
+>
+  <Link 
+    href="/contact" 
+    className="cta-link"
+  >
+    <span className="chev">&gt;</span>Contact.
+  </Link>
+</div>
+</div>
+          
 
       {/* Scrolling bands — these are the moving layer */}
       <div className="relative">
