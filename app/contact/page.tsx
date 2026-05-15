@@ -8,18 +8,28 @@ export default function Contact() {
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const formData = new FormData(form);
+  e.preventDefault();
+  const form = e.currentTarget;
+  const formData = new FormData(form);
 
-    await fetch("/", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams(formData as never).toString(),
-    });
+  // Convert to URL-encoded format
+  const encoded: string[] = [];
+  formData.forEach((value, key) => {
+    encoded.push(`${encodeURIComponent(key)}=${encodeURIComponent(value.toString())}`);
+  });
 
+  const response = await fetch("/__forms.html", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: encoded.join("&"),
+  });
+
+  if (response.ok) {
     setSubmitted(true);
-  };
+  } else {
+    console.error("Form submission failed", response.status);
+  }
+};
 
   return (
     <main className="min-h-screen bg-black text-white flex flex-col">
