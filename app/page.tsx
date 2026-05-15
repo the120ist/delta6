@@ -83,8 +83,8 @@ const [isInteractive, setIsInteractive] = useState(false);
 <div
   className="absolute flex flex-col items-start gap-2 transition-opacity duration-200"
   style={{ 
-    opacity: activeIndex === 3 ? 1 : 0,
-    visibility: activeIndex === 3 ? "visible" : "hidden",
+    opacity: activeIndex === 3 && isInteractive ? 1 : 0,
+    visibility: activeIndex === 3 && isInteractive ? "visible" : "hidden",
     pointerEvents: activeIndex === 3 && isInteractive ? "auto" : "none",
   }}
 >
